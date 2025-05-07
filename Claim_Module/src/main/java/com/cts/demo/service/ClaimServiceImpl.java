@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cts.demo.dto.Policy;
+import com.cts.demo.dto.PolicyDTO;
 import com.cts.demo.exception.ClaimNotFoundException;
 import com.cts.demo.feign.PolicyClient;
 import com.cts.demo.model.Claim;
@@ -31,7 +31,7 @@ public class ClaimServiceImpl implements ClaimService {
 		else
 			return "Something went wrong";
 	}
-	
+
 	@Override
 	public Claim reviewClaimByIdAndAmount(long claimId) throws ClaimNotFoundException {
 		Optional<Claim> optional = repository.findById(claimId);
@@ -40,7 +40,7 @@ public class ClaimServiceImpl implements ClaimService {
 			throw new ClaimNotFoundException("There is no claim in the given Claim ID...");
 		} else {
 			long policyId = optional.get().getPolicyId();
-			Policy policy = policyClient.retrievePolicy(policyId);
+			PolicyDTO policy = policyClient.retrievePolicy(policyId);
 			double maxAmt = policy.getPremiumAmount();
 			double claimAmt = optional.get().getClaimAmount();
 			if (claimAmt <= maxAmt) {
@@ -53,7 +53,7 @@ public class ClaimServiceImpl implements ClaimService {
 //				return claim;
 			}
 			Optional<Claim> claim = repository.findById(claimId);
-			
+
 			return claim.get();
 
 		}
@@ -73,7 +73,7 @@ public class ClaimServiceImpl implements ClaimService {
 			throw new ClaimNotFoundException("There is no claim in the given Claim ID...");
 		} else {
 			long policyId = optional.get().getPolicyId();
-			Policy policy = policyClient.retrievePolicy(policyId);
+			PolicyDTO policy = policyClient.retrievePolicy(policyId);
 			long customerId = policy.getCustomerId();
 			long claimCustomerId = optional.get().getCustomerId();
 			if (customerId == claimCustomerId) {

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClaimPolicyResponseDto {
+public class CustomerDTO {
 	Claim claim;
-	Policy policy;
+	PolicyDTO policy;
 }
