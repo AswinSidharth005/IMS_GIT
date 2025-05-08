@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerDTO {
+	private Long id;
+	private String name;
 	Claim claim;
 	PolicyDTO policy;
 }

@@ -47,6 +47,10 @@ public class CustomerController {
 	public Customer searchCustomerByName(@PathVariable("custName") String customerName) {
 		return service.searchCustomerByName(customerName);
 	}
+	@GetMapping("/retrieveById/{cid}")
+	public Customer getCustomerById(@PathVariable("cid") long cid) {
+	   return service.getCustomerById(cid);
+	}
 
 	@PutMapping("/assignPoliciesToCustomer/{pid}/{cid}/{pType}")
 	public Customer assignPoliciesToCustomer(@PathVariable("pid") long policyId, @PathVariable("cid") long customerId,

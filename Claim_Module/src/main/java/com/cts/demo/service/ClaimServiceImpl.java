@@ -6,35 +6,65 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cts.demo.dto.CustomerDTO;
 import com.cts.demo.dto.PolicyDTO;
 import com.cts.demo.exception.ClaimNotFoundException;
+import com.cts.demo.feign.CustomerClient;
 import com.cts.demo.feign.PolicyClient;
 import com.cts.demo.model.Claim;
 import com.cts.demo.repository.ClaimRepository;
 
-import jakarta.transaction.Transactional;
+import feign.FeignException;
 
 @Service("claimService")
 public class ClaimServiceImpl implements ClaimService {
 
 	@Autowired
-	ClaimRepository repository;
+	ClaimRepository claimRepository;
 
 	@Autowired
 	PolicyClient policyClient;
+	
+	@Autowired
+	CustomerClient customerClient;
 
-	@Override
-	public String fileClaim(Claim claim) {
-		Claim c = repository.save(claim);
-		if (c != null)
-			return "New claim request has been filed successfully";
-		else
-			return "Something went wrong";
-	}
+	 @Override
+	   public String fileClaim(Claim claim) {
+	       Long customerId = claim.getCustomerId();
+	       Long policyId   = claim.getPolicyId();
+	       // --- Validate Customer exists ---
+	       try {
+	           CustomerDTO customer = customerClient.getCustomerById(customerId);
+	       } catch (FeignException.NotFound ex) {
+	           throw new RuntimeException("Customer with ID " + customerId + " not found.");
+	       } catch (FeignException ex) {
+	           throw new RuntimeException(
+	               "Error fetching customer with ID " + customerId + ": " + ex.getMessage());
+	       }
+	       // --- Validate Policy exists ---
+	       PolicyDTO policy;
+	       try {
+	           policy = policyClient.retrievePolicy(policyId);
+	       } catch (FeignException.NotFound ex) {
+	           throw new RuntimeException("Policy with ID " + policyId + " not found.");
+	       } catch (FeignException ex) {
+	           throw new RuntimeException(
+	               "Error fetching policy with ID " + policyId + ": " + ex.getMessage());
+	       }
+	       // --- Ensure the policy belongs to the customer ---
+	       if (!customerId.equals(policy.getCustomerId())) {
+	           throw new RuntimeException(
+	               "Policy " + policyId + " does not belong to Customer " + customerId);
+	       }
+	       // --- Save the claim ---
+	       Claim saved = claimRepository.save(claim);
+	       return "Claim filed successfully. Claim ID: " + saved.getClaimId();
+	   }
+	
 
 	@Override
 	public Claim reviewClaimByIdAndAmount(long claimId) throws ClaimNotFoundException {
-		Optional<Claim> optional = repository.findById(claimId);
+		Optional<Claim> optional = claimRepository.findById(claimId);
 
 		if (!optional.isPresent()) {
 			throw new ClaimNotFoundException("There is no claim in the given Claim ID...");
@@ -44,15 +74,15 @@ public class ClaimServiceImpl implements ClaimService {
 			double maxAmt = policy.getPremiumAmount();
 			double claimAmt = optional.get().getClaimAmount();
 			if (claimAmt <= maxAmt) {
-				repository.updateClaimStatus("APPROVED", claimId);
+				claimRepository.updateClaimStatus("APPROVED", claimId);
 //				Claim claim = repository.findById(claimId).get();
 //				return claim;
 			} else {
-				repository.updateClaimStatus("REJECTED", claimId);
+				claimRepository.updateClaimStatus("REJECTED", claimId);
 //				Claim claim = repository.findById(claimId).get();
 //				return claim;
 			}
-			Optional<Claim> claim = repository.findById(claimId);
+			Optional<Claim> claim = claimRepository.findById(claimId);
 
 			return claim.get();
 
@@ -62,13 +92,13 @@ public class ClaimServiceImpl implements ClaimService {
 
 	@Override
 	public String claimStatus(long claimId) {
-		Optional<Claim> optional = repository.findById(claimId);
+		Optional<Claim> optional = claimRepository.findById(claimId);
 		return optional.get().getClaimStatus();
 	}
 
 	@Override
 	public Claim reviewClaimByIdAndName(long claimId) throws ClaimNotFoundException {
-		Optional<Claim> optional = repository.findById(claimId);
+		Optional<Claim> optional = claimRepository.findById(claimId);
 		if (!optional.isPresent()) {
 			throw new ClaimNotFoundException("There is no claim in the given Claim ID...");
 		} else {
@@ -77,11 +107,11 @@ public class ClaimServiceImpl implements ClaimService {
 			long customerId = policy.getCustomerId();
 			long claimCustomerId = optional.get().getCustomerId();
 			if (customerId == claimCustomerId) {
-				repository.updateClaimStatus("IN-REVIEW", claimId);
-				return repository.findById(claimId).get();
+				claimRepository.updateClaimStatus("IN-REVIEW", claimId);
+				return claimRepository.findById(claimId).get();
 			} else {
-				repository.updateClaimStatus("REJECTED", claimId);
-				return repository.findById(claimId).get();
+				claimRepository.updateClaimStatus("REJECTED", claimId);
+				return claimRepository.findById(claimId).get();
 			}
 		}
 	}
@@ -89,7 +119,7 @@ public class ClaimServiceImpl implements ClaimService {
 	@Override
 	public Claim getClaimById(long claimId) throws ClaimNotFoundException {
 
-		Claim claim = repository.findById(claimId).get();
+		Claim claim = claimRepository.findById(claimId).get();
 		if (claim != null) {
 			return claim;
 		} else {
@@ -100,12 +130,12 @@ public class ClaimServiceImpl implements ClaimService {
 
 	@Override
 	public List<Claim> getAllClaims() {
-		return repository.findAll();
+		return claimRepository.findAll();
 	}
 
 	@Override
 	public String deleteClaimById(long claimId) {
-		repository.deleteById(claimId);
+		claimRepository.deleteById(claimId);
 		return "Claim deleted Successfully";
 	}
 

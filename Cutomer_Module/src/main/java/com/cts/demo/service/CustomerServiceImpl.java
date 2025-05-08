@@ -88,4 +88,10 @@ public class CustomerServiceImpl implements CustomerService {
 
 	}
 
+	@Override
+	public Customer getCustomerById(long customerId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
