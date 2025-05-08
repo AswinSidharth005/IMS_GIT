@@ -37,8 +37,7 @@ public class Customer {
 		this.customerEmail = customerEmail;
 		this.customerPhone = customerPhone;
 		this.customerAddress = customerAddress;
-		this.policies = policies;
-	}
+		}
 
 	
 	

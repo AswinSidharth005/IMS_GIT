@@ -20,4 +20,6 @@ public interface ClaimService {
 	public abstract List<Claim> getAllClaims();
 
 	public abstract String deleteClaimById(long claimId);
+	
+	public abstract Claim updateClaim(long claimId,Claim claimDetails) throws ClaimNotFoundException;
 }

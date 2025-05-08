@@ -139,4 +139,22 @@ public class ClaimServiceImpl implements ClaimService {
 		return "Claim deleted Successfully";
 	}
 
-}
+
+	@Override
+	public Claim updateClaim(long claimId, Claim claimDetails) throws ClaimNotFoundException {
+	   Optional<Claim> optionalClaim = claimRepository.findById(claimId);
+	   if (optionalClaim.isPresent()) {
+	       Claim claimToUpdate = optionalClaim.get();
+	       // update fields
+	       claimToUpdate.setCustomerId(claimDetails.getCustomerId());
+	       claimToUpdate.setPolicyId(claimDetails.getPolicyId());
+	       claimToUpdate.setClaimAmount(claimDetails.getClaimAmount());
+	       claimToUpdate.setClaimStatus(claimDetails.getClaimStatus());
+	       // save and return
+	       return claimRepository.save(claimToUpdate);
+	   } else {
+	       throw new ClaimNotFoundException("Enter a Valid Claim Id...");
+	   }
+	}
+	}
+

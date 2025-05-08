@@ -58,5 +58,9 @@ public class ClaimController {
 	public String deleteClaimById(@PathVariable("cid") long claimId) {
 		return service.deleteClaimById(claimId);
 	}
+	@PutMapping("/updateById/{cid}")
+	public Claim updateClaimById(@PathVariable("cid") long claimId,@RequestBody Claim claimDetails ) throws ClaimNotFoundException {
+		return service.updateClaim(claimId,claimDetails);
+	}
 
 }
