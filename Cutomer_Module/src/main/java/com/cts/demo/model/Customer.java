@@ -27,11 +27,13 @@ public class Customer {
 	private String customerEmail;
 	private String customerPhone;
 	private String customerAddress;
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "customer_id", referencedColumnName = "customerId")
-	private List<Policy1> policies;
-	public Customer(String customerName, String customerEmail, String customerPhone, String customerAddress,
-			List<Policy1> policies) {
+//	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//	@JoinColumn(name = "customer_id", referencedColumnName = "customerId")
+//	private List<Policy1> policies;
+	
+	
+	public Customer(String customerName, String customerEmail, String customerPhone, String customerAddress
+			) {
 		super();
 		this.customerName = customerName;
 		this.customerEmail = customerEmail;
